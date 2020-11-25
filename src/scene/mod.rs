@@ -159,6 +159,21 @@ impl<'a> Node<'a> {
         }
     }
 
+    /// Returns whether this node should be used in boids simulation. Part of TEMPEST_extension
+    #[cfg(feature = "TEMPEST_extension")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "TEMPEST_extension")))]
+    pub fn boids(&self) -> Option<bool> {
+        if let Some(extensions) = self.json.extensions.as_ref() {
+            if let Some(tempest_extension) = extensions.tempest.as_ref() {
+                Some(tempest_extension.boids)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Returns the mesh referenced by this node.
     pub fn mesh(&self) -> Option<Mesh<'a>> {
         self.json.mesh.as_ref().map(|index| {

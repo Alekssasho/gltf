@@ -16,6 +16,21 @@ pub struct Node {
     #[cfg(feature = "KHR_lights_punctual")]
     #[serde(default, rename = "KHR_lights_punctual", skip_serializing_if = "Option::is_none")]
     pub khr_lights_punctual: Option<khr_lights_punctual::KhrLightsPunctual>,
+
+    #[cfg(feature = "TEMPEST_extension")]
+    #[serde(default, rename = "TEMPEST_extension", skip_serializing_if = "Option::is_none")]
+    pub tempest: Option<tempest_extension::TempestNodeExtension>,
+}
+
+#[cfg(feature = "TEMPEST_extension")]
+pub mod tempest_extension {
+    use serde_derive::{Deserialize, Serialize};
+    use gltf_derive::Validate;
+    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    pub struct TempestNodeExtension {
+        #[serde(rename = "boids_enabled")]
+        pub boids: bool,
+    }
 }
 
 #[cfg(feature = "KHR_lights_punctual")]

@@ -159,16 +159,12 @@ impl<'a> Node<'a> {
         }
     }
 
-    /// Returns whether this node should be used in boids simulation. Part of TEMPEST_extension
+    /// Returns tempest extension data. Part of TEMPEST_extension
     #[cfg(feature = "TEMPEST_extension")]
     #[cfg_attr(docsrs, doc(cfg(feature = "TEMPEST_extension")))]
-    pub fn boids(&self) -> Option<bool> {
+    pub fn tempest_extension(&self) -> Option<&json::extensions::scene::tempest_extension::TempestNodeExtension> {
         if let Some(extensions) = self.json.extensions.as_ref() {
-            if let Some(tempest_extension) = extensions.tempest.as_ref() {
-                Some(tempest_extension.boids)
-            } else {
-                None
-            }
+            return extensions.tempest.as_ref();
         } else {
             None
         }

@@ -26,10 +26,17 @@ pub struct Node {
 pub mod tempest_extension {
     use serde_derive::{Deserialize, Serialize};
     use gltf_derive::Validate;
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    pub struct PhysicsBody {
+        pub dynamic: bool,
+        pub collision_shape: bool, // TODO: Change to actual collision shape
+    }
     #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
     pub struct TempestNodeExtension {
         #[serde(rename = "boids_enabled")]
-        pub boids: bool,
+        pub boids: Option<bool>,
+        pub physics_body: Option<PhysicsBody>,
     }
 }
 

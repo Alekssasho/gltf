@@ -24,19 +24,82 @@ pub struct Node {
 
 #[cfg(feature = "TEMPEST_extension")]
 pub mod tempest_extension {
+    use serde::{de, ser};
     use serde_derive::{Deserialize, Serialize};
     use gltf_derive::Validate;
+    use std::fmt;
 
+    use crate::validation::Checked;
+
+     /// All valid collision shape types.
+     pub const VALID_TYPES: &'static [&'static str] = &[
+        "mesh",
+        "sphere",
+    ];
+    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+    pub enum Type {
+        Mesh = 1,
+        Sphere,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
+    pub struct CollisionShape {
+        #[serde(rename = "type")]
+        pub type_: Checked<Type>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        pub radius: Option<f32>
+    }
     #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
     pub struct PhysicsBody {
         pub dynamic: bool,
-        pub collision_shape: bool, // TODO: Change to actual collision shape
+        pub collision_shape: CollisionShape
     }
     #[derive(Clone, Debug, Deserialize, Serialize, Validate)]
     pub struct TempestNodeExtension {
         #[serde(rename = "boids_enabled")]
         pub boids: Option<bool>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
         pub physics_body: Option<PhysicsBody>,
+    }
+
+    impl<'de> de::Deserialize<'de> for Checked<Type> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where D: de::Deserializer<'de>
+        {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = Checked<Type>;
+
+                fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                    write!(f, "any of: {:?}", VALID_TYPES)
+                }
+
+                fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+                    where E: de::Error
+                {
+                    use self::Type::*;
+                    use crate::validation::Checked::*;
+                    Ok(match value {
+                        "mesh" => Valid(Mesh),
+                        "sphere" => Valid(Sphere),
+                        _ => Invalid,
+                    })
+                }
+            }
+            deserializer.deserialize_str(Visitor)
+        }
+    }
+
+    impl ser::Serialize for Type {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+            S: ser::Serializer
+        {
+            serializer.serialize_str(match *self {
+                Type::Mesh => "mesh",
+                Type::Sphere => "sphere",
+            })
+        }
     }
 }
 
